@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+<body>
+  <button id="btn-evento-mensaje">Enviar evento de mensaje</button>
+  <div id="errors"></div>
+  <ul id="users"></ul>
+  <span id="server-status"><span>
+  
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    const socket = io()
+    const serverStatusElement = document.getElementById('server-status');
+    const btnEventoMensaje = document.getElementById('btn-evento-mensaje');
+    const errorsDiv = document.getElementById('errors');
+    const usersList = document.getElementById('users');
+
+    btnEventoMensaje.addEventListener('click', () => {
+      socket.emit('new_message_client', {text: 'Hola mundo'})
+    })
+
+    socket.on('connect', () => {
+      serverStatusElement.innerText = 'Online'
+      serverStatusElement.style = 'color:green;'
+      errorsDiv.innerHTML = ''
+    })
+    socket.on('disconnect', () => {
+      serverStatusElement.innerText = 'Offline'
+      serverStatusElement.style = 'color:red;'
+      errorsDiv.innerHTML = ''
+    })
+
+    socket.on('error_message', (error) => {
+      console.log(error)
+      errorsDiv.innerHTML = `<p>Ha ocurrido un error inesperado</p><p>Error: ${error}</p>`
+    })
+
+    socket.on('new_message_server', ({message, counter}) => {
+      console.log('Mensaje recibido: ' + message.text)
+      console.log('Timestamp: ' + message.timestamp)
+      console.log('El boton ha sido presionado ' + counter)
+      errorsDiv.innerHTML = ''
+    }) 
+
+    socket.on('update_users', (users) => {
+      usersList.innerHTML = ""
+      users.forEach(id => {
+        usersList.innerHTML += `<li id="${id}"">Usuario conectado: ${id}</li>`
+      })
+    })
+  </script>
+</body>
+</html>
